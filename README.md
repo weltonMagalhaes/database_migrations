@@ -21,6 +21,7 @@ utilizando **Flyway**, organizado por tipo de SGDB.
 - [Objetivo da Estrutura](#-objetivo-da-estrutura)
 - [Variaveis Globais](#-variaveis-globais)
 - [Variaveis por Ambiente](#-variaveis-por-ambiente)
+- [Documentacao de Configuracao](#-documentacao-de-configuracao)
 - [Referencias](#-referências)
 - [Status](#-status)
 
@@ -73,7 +74,8 @@ dados de forma independente:
 │           │           └── 📁 env/                      # Placeholders/credenciais por ambiente adicionado no arquivo gitignore
 │           │               
 │           ├── 📁 docs/                                  # Documentacao especifica
-│           │   └── 📄 criar_repositorio_no_git.md
+│           │   ├── 📄 criar_repositorio_no_git.md
+│           │   └── 📄 documentacao_arquivos_de_configuracao.md
 │           ├── 📁 logs/                                  # Logs gerados pelo Flyway
 │           │   └── 📄 .gitkeep
 │           ├── 📁 scripts/                               # Scripts auxiliares versionados
@@ -198,10 +200,19 @@ dados de forma independente:
 
 ------------------------------------------------------------------------
 
+## 📘 Documentacao de Configuracao
+
+- [Documentacao dos Arquivos de Configuracao (.conf)](sgdb/oracle/flyway/docs/documentacao_arquivos_de_configuracao.md)
+- Este documento concentra a lista dos arquivos `.conf` e o papel de cada configuracao no projeto.
+
+------------------------------------------------------------------------
+
 ## 📚 Referências
 - [Documentação oficial do Flyway](https://flywaydb.org/documentation/)
 - [Boas práticas com migrations](https://flywaydb.org/documentation/concepts/migrations#versioned-migrations)
 - [Oracle e Flyway](https://flywaydb.org/documentation/database/oracle)
+- [Como criar repositorio no GitHub com GH CLI](sgdb/oracle/flyway/docs/criar_repositorio_no_git.md)
+- [Documentacao dos arquivos de configuracao](sgdb/oracle/flyway/docs/documentacao_arquivos_de_configuracao.md)
 
 
 ## 🚧 Status
