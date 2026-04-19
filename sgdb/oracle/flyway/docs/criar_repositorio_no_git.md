@@ -92,3 +92,26 @@ git remote add origin https://github.com/seu-usuario/nome-do-repositorio.git
 git branch -M main
 git push -u origin main
 ```
+
+### Erro comum ao executar `git push`
+
+Esse erro e esperado: ainda nao existe remoto configurado no seu repositorio local.
+
+Rode nesta ordem:
+
+```bash
+git remote add origin https://github.com/SEU_USUARIO/nome-do-repositorio.git
+git branch -M main
+git push -u origin main
+```
+
+Orientacoes necessarias:
+
+- Troque `SEU_USUARIO` e `nome-do-repositorio` pelos valores reais do GitHub.
+- Se o repositorio remoto tiver outro nome, use o nome exato na URL.
+- Para validar antes do push, execute:
+
+```bash
+git remote -v
+git branch
+```
