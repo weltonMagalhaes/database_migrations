@@ -91,7 +91,13 @@ dados de forma independente:
 │                               │   ├── 📁 monitoring/   # Objetos de monitoramento e observabilidade
 │                               │   │   └── 📄 .gitkeep
 │                               │   └── 📁 users/        # DDL de usuarios, roles e grants
-│                               │       └── 📄 .gitkeep
+│                               │       ├── 📄 flyway-configuracao-usuario-dba-admin.conf
+│                               │       ├── 📄 flyway-configuracao-usuario-owner-dev.conf
+│                               │       ├── 📄 flyway-configuracao-usuario-owner-hml.conf
+│                               │       ├── 📄 flyway-configuracao-usuario-owner-prod.conf
+│                               │       ├── 📄 flyway-configuracao-usuario-app-dev.conf
+│                               │       ├── 📄 flyway-configuracao-usuario-app-hml.conf
+│                               │       └── 📄 flyway-configuracao-usuario-app-prod.conf
 │                               ├── 📁 application/      # Trilhas do schema da aplicacao
 │                               │   ├── 📁 app-dev/      # Scripts especificos do ambiente DEV
 │                               │   │   └── 📄 .gitkeep
