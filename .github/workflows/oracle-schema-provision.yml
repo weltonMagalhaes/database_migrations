@@ -122,6 +122,8 @@ jobs:
           $envFile = Join-Path $hostWorkdir ".ci.env"
           $baseConf = "conf/flyway-configuracao_base-controle-finaceiro.conf"
           $envLower = "${{ inputs.ambiente }}".ToLowerInvariant()
+          $appUserConf = "sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-usuario-app-$envLower.conf"
+          $ownerUserConf = "sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-usuario-owner-$envLower.conf"
           $appConf = "sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-validacao-app-$envLower.conf"
           $ownerConf = "sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-validacao-owner-$envLower.conf"
           $flywayCmd = "${{ inputs.comando }}"
@@ -206,9 +208,26 @@ jobs:
           }
 
           switch ("${{ inputs.dominio }}") {
-            "application" { Run-Flyway $appConf }
-            "owner"       { Run-Flyway $ownerConf }
-            "all"         { Run-Flyway $appConf; Run-Flyway $ownerConf }
+            "application" {
+              if ($flywayCmd -eq "migrate") {
+                Run-Flyway $appUserConf
+              }
+              Run-Flyway $appConf
+            }
+            "owner" {
+              if ($flywayCmd -eq "migrate") {
+                Run-Flyway $ownerUserConf
+              }
+              Run-Flyway $ownerConf
+            }
+            "all" {
+              if ($flywayCmd -eq "migrate") {
+                Run-Flyway $appUserConf
+                Run-Flyway $ownerUserConf
+              }
+              Run-Flyway $appConf
+              Run-Flyway $ownerConf
+            }
             default       { throw "Dominio invalido: ${{ inputs.dominio }}" }
           }
 

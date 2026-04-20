@@ -48,37 +48,37 @@ Configuracoes principais aplicadas por este arquivo:
 
 - Caminho: `sgdb/oracle/flyway/sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-usuario-owner-dev.conf`
 - Tipo: configuracao de criacao/gestao de usuario OWNER no DEV
-- Funcao principal: executar scripts da trilha `owner/owner-dev` com placeholders de usuario OWNER do DEV.
+- Funcao principal: executar scripts da trilha `admin/users/provision/owner-dev` para criar/ajustar usuario OWNER do DEV.
 
 ### 4) `flyway-configuracao-usuario-owner-hml.conf`
 
 - Caminho: `sgdb/oracle/flyway/sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-usuario-owner-hml.conf`
 - Tipo: configuracao de criacao/gestao de usuario OWNER no HML
-- Funcao principal: executar scripts da trilha `owner/owner-hml` com placeholders de usuario OWNER do HML.
+- Funcao principal: executar scripts da trilha `admin/users/provision/owner-hml` para criar/ajustar usuario OWNER do HML.
 
 ### 5) `flyway-configuracao-usuario-owner-prod.conf`
 
 - Caminho: `sgdb/oracle/flyway/sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-usuario-owner-prod.conf`
 - Tipo: configuracao de criacao/gestao de usuario OWNER no PROD
-- Funcao principal: executar scripts da trilha `owner/owner-prod` com placeholders de usuario OWNER do PROD.
+- Funcao principal: executar scripts da trilha `admin/users/provision/owner-prod` para criar/ajustar usuario OWNER do PROD.
 
 ### 6) `flyway-configuracao-usuario-app-dev.conf`
 
 - Caminho: `sgdb/oracle/flyway/sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-usuario-app-dev.conf`
 - Tipo: configuracao de criacao/gestao de usuario APPLICATION no DEV
-- Funcao principal: executar scripts da trilha `application/app-dev` com placeholders de usuario APPLICATION do DEV.
+- Funcao principal: executar scripts da trilha `admin/users/provision/app-dev` para criar/ajustar usuario APPLICATION do DEV.
 
 ### 7) `flyway-configuracao-usuario-app-hml.conf`
 
 - Caminho: `sgdb/oracle/flyway/sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-usuario-app-hml.conf`
 - Tipo: configuracao de criacao/gestao de usuario APPLICATION no HML
-- Funcao principal: executar scripts da trilha `application/app-hml` com placeholders de usuario APPLICATION do HML.
+- Funcao principal: executar scripts da trilha `admin/users/provision/app-hml` para criar/ajustar usuario APPLICATION do HML.
 
 ### 8) `flyway-configuracao-usuario-app-prod.conf`
 
 - Caminho: `sgdb/oracle/flyway/sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-usuario-app-prod.conf`
 - Tipo: configuracao de criacao/gestao de usuario APPLICATION no PROD
-- Funcao principal: executar scripts da trilha `application/app-prod` com placeholders de usuario APPLICATION do PROD.
+- Funcao principal: executar scripts da trilha `admin/users/provision/app-prod` para criar/ajustar usuario APPLICATION do PROD.
 
 ### 9) `flyway-configuracao-validacao-app-dev.conf`
 
