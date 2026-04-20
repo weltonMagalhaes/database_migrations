@@ -1,17 +1,17 @@
 ﻿/*=======================================================================================
 
 @versao         : Oracle Database 21c Express Edition Release 21.0.0.0.0 - Production
-@author         : Welton Magalhaes de Oliveira
-@email          : welton.m.o@hotmail.com
-@data-criacao   : 20-04-2026
 @ambiente       : PROD
 @dominio        : OWNER
 
 Descricao:
-Provisiona o usuario OWNER do ambiente PROD.
-Se o usuario nao existir, cria. Se existir, atualiza senha/tablespaces e desbloqueia.
+Migration repeatable para garantir que o usuario OWNER PROD exista e esteja
+com senha/tablespaces/permissoes sincronizados com os placeholders do pipeline.
 
 =======================================================================================*/
+
+-- Forca reexecucao em todo migrate para reconciliar senha e grants.
+-- ${flyway:timestamp}
 
 DECLARE
     v_usuario_existe NUMBER := 0;
