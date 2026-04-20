@@ -1,4 +1,4 @@
-﻿# Migracoes de Banco de Dados (Database Migrations)
+# Migracoes de Banco de Dados (Database Migrations)
 
 Repositorio responsavel por centralizar o versionamento de banco de dados
 utilizando **Flyway**, organizado por tipo de SGDB.
@@ -7,7 +7,7 @@ utilizando **Flyway**, organizado por tipo de SGDB.
 
 ![Status](https://img.shields.io/badge/status-em%20desenvolvimento-yellow)
 ![Flyway](https://img.shields.io/badge/Flyway-9.x-red)
-![Oracle](https://img.shields.io/badge/Oracle-19c-blue)
+![Oracle](https://img.shields.io/badge/Oracle-21c-blue)
 
 ------------------------------------------------------------------------
 
@@ -21,6 +21,7 @@ utilizando **Flyway**, organizado por tipo de SGDB.
 - [Objetivo da Estrutura](#-objetivo-da-estrutura)
 - [Variaveis Globais](#-variaveis-globais)
 - [Variaveis por Ambiente](#-variaveis-por-ambiente)
+- [Execucao de Validacao por Ambiente](#-execução-de-validação-por-ambiente)
 - [Documentacao de Configuracao](#-documentacao-de-configuracao)
 - [Referencias](#-referências)
 - [Status](#-status)
@@ -55,7 +56,7 @@ cp sgdb/oracle/flyway/scripts/variaveis-template.env sgdb/oracle/flyway/conf/pro
 
 # 5. Entre na pasta do Flyway e execute uma migration
 cd sgdb/oracle/flyway
-flyway -configFiles=conf/projects/controle-financeiro/flyway-controle-financeiro-app-dev.conf migrate
+flyway -configFiles=sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-validacao-app-dev.conf migrate
 ```
 
 ## 🧱 Estrutura de Pastas
@@ -73,19 +74,18 @@ dados de forma independente:
 │       ├── 📄 .gitignore                                # Regras de versionamento para arquivos locais do Oracle
 │       └── 📁 flyway/                                   # Estrutura base do Flyway para Oracle
 │           ├── 📁 conf/                                 # Configuracoes por projeto/ambiente
+│           │   ├── 📄 flyway-configuracao_base-controle-finaceiro.conf
 │           │   └── 📁 projects/                         # Configs segregadas por projeto
 │           │       └── 📁 controle-financeiro/          # Projeto Gestao Financeira Pessoal
-│           │           └── 📁 env/                      # Placeholders/credenciais por ambiente adicionado no arquivo gitignore
-│           │               
-│           │               
-│           ├── 📁 docs/                                  # Documentacao especifica
+│           │           └── 📁 env/                      # Placeholders/credenciais por ambiente (local)
+│           ├── 📁 docs/                                 # Documentacao especifica
 │           │   ├── 📄 criar_repositorio_no_git.md
 │           │   ├── 📄 criar_pipelines_ci_cd_com_ actions_runner.md
 │           │   ├── 📄 documentacao_arquivos_de_configuracao.md
 │           │   └── 📄 documentacao_das_variaveis_de_configuracao.md
-│           ├── 📁 logs/                                  # Logs gerados pelo Flyway
+│           ├── 📁 logs/                                 # Logs gerados pelo Flyway
 │           │   └── 📄 .gitkeep
-│           ├── 📁 scripts/                               # Scripts auxiliares versionados
+│           ├── 📁 scripts/                              # Scripts auxiliares versionados
 │           │   ├── 📄 definir-github-secrets.ps1
 │           │   ├── 📄 definir-github-secrets.sh
 │           │   └── 📄 variaveis-template.env
@@ -94,34 +94,41 @@ dados de forma independente:
 │                   └── 📁 db/                           # Trilhas de migracao de banco
 │                       └── 📁 projects/                 # Migrations separadas por projeto
 │                           └── 📁 controle-financeiro/  # Dominio de migrations do projeto
-│                               ├── 📁 admin/            # Trilhas do schema administrativo
-│                               │   ├── 📁 audit/        # Objetos e regras de auditoria
-│                               │   │   └── 📄 .gitkeep
-│                               │   ├── 📁 monitoring/   # Objetos de monitoramento e observabilidade
-│                               │   │   └── 📄 .gitkeep
-│                               │   └── 📁 users/        # DDL de usuarios, roles e grants
+│                               ├── 📁 admin/
+│                               │   └── 📁 users/        # DDL de usuarios + configuracoes Flyway
 │                               │       ├── 📄 flyway-configuracao-usuario-dba-admin.conf
 │                               │       ├── 📄 flyway-configuracao-usuario-owner-dev.conf
 │                               │       ├── 📄 flyway-configuracao-usuario-owner-hml.conf
 │                               │       ├── 📄 flyway-configuracao-usuario-owner-prod.conf
 │                               │       ├── 📄 flyway-configuracao-usuario-app-dev.conf
 │                               │       ├── 📄 flyway-configuracao-usuario-app-hml.conf
-│                               │       └── 📄 flyway-configuracao-usuario-app-prod.conf
-│                               ├── 📁 application/      # Trilhas do schema da aplicacao
-│                               │   ├── 📁 app-dev/      # Scripts especificos do ambiente DEV
-│                               │   │   └── 📄 .gitkeep
-│                               │   ├── 📁 app-hml/      # Scripts especificos do ambiente HML
-│                               │   │   └── 📄 .gitkeep
-│                               │   └── 📁 app-prod/     # Scripts especificos do ambiente PROD
-│                               │       └── 📄 .gitkeep
-│                               ├── 📁 owner/            # Trilhas do schema owner
-│                               │   ├── 📁 owner-dev/    # Scripts especificos do ambiente DEV
-│                               │   │   └── 📄 .gitkeep
-│                               │   ├── 📁 owner-hml/    # Scripts especificos do ambiente HML
-│                               │   │   └── 📄 .gitkeep
-│                               │   └── 📁 owner-prod/   # Scripts especificos do ambiente PROD
-│                               │       └── 📄 .gitkeep
-│                               └── 📁 shared/           # Objetos compartilhados entre dominios/schemas
+│                               │       ├── 📄 flyway-configuracao-usuario-app-prod.conf
+│                               │       ├── 📄 flyway-configuracao-validacao-app-dev.conf
+│                               │       ├── 📄 flyway-configuracao-validacao-app-hml.conf
+│                               │       ├── 📄 flyway-configuracao-validacao-app-prod.conf
+│                               │       ├── 📄 flyway-configuracao-validacao-owner-dev.conf
+│                               │       ├── 📄 flyway-configuracao-validacao-owner-hml.conf
+│                               │       └── 📄 flyway-configuracao-validacao-owner-prod.conf
+│                               ├── 📁 application/
+│                               │   ├── 📁 app-dev/
+│                               │   │   ├── 📄 .gitkeep
+│                               │   │   └── 📄 V1__validacao_flyway_inicial.sql
+│                               │   ├── 📁 app-hml/
+│                               │   │   ├── 📄 .gitkeep
+│                               │   │   └── 📄 V1__validacao_flyway_inicial.sql
+│                               │   └── 📁 app-prod/
+│                               │       ├── 📄 .gitkeep
+│                               │       └── 📄 V1__validacao_flyway_inicial.sql
+│                               └── 📁 owner/
+│                                   ├── 📁 owner-dev/
+│                                   │   ├── 📄 .gitkeep
+│                                   │   └── 📄 V1__validacao_flyway_inicial.sql
+│                                   ├── 📁 owner-hml/
+│                                   │   ├── 📄 .gitkeep
+│                                   │   └── 📄 V1__validacao_flyway_inicial.sql
+│                                   └── 📁 owner-prod/
+│                                       ├── 📄 .gitkeep
+│                                       └── 📄 V1__validacao_flyway_inicial.sql
 └── 📄 README.md
 ```
 
@@ -129,48 +136,44 @@ dados de forma independente:
 
 ## 📝 Observações Importantes
 
--  Cada SGDB possui sua própria estrutura Flyway dentro de sgdb/
--  O dominio admin esta separado em trilhas audit, monitoring e users
--  Os domínios application e owner estao organizados por ambiente (dev, hml e prod)
--  Os arquivos de configuração .conf usam placeholders (${VARIAVEL}) resolvidos pelo Flyway
--  A pasta .github será utilizada para automação futura (GitHub Actions)
-
-
+- Cada SGDB possui sua propria estrutura Flyway dentro de `sgdb/`.
+- O dominio `admin/users` concentra configuracoes `.conf` por contexto.
+- Os dominios `application` e `owner` estao organizados por ambiente (`dev`, `hml`, `prod`).
+- As validacoes iniciais de versionamento foram criadas para `application` e `owner` em todos os ambientes.
+- Os arquivos de configuração `.conf` usam placeholders `${VARIAVEL}` resolvidos pelo Flyway.
+- A pasta `.github` sera utilizada para automacao futura (GitHub Actions).
 
 ### 📋 Nomenclatura das Migrations
 
 ```bash
-        V{numero}__{descricao}.sql
+V{numero}__{descricao}.sql
 
-        Exemplos:
-        V1__init_admin_common.sql       # Versão 1: inicial comum
-        V2__admin_dev.sql               # Versão 2: específico DEV
-        V3__add_audit_fields.sql        # Versão 3: adiciona campos de auditoria
-        V4__create_table_transacoes.sql # Versão 4: nova tabela
-
+Exemplos:
+V1__validacao_flyway_inicial.sql
+V2__create_table_transacoes.sql
+V3__add_audit_fields.sql
 ```
-
-
 
 ## ⚠️ Importante
 
- - Se você está acostumado com outras ferramentas (como Liquibase ou ferramentas que usam timestamp), o Flyway é mais  rígido nesse aspecto. O padrão correto é sempre:
+- Se voce esta acostumado com outras ferramentas (como Liquibase ou ferramentas com timestamp), o Flyway e mais rigido nesse aspecto.
+- O padrao correto e sempre:
 
-- ✅ Use números sequenciais: `V1`, `V2`, `V3`...
-- ✅ Use **duplo underscore** `__` após o número
-- ✅ Descrição clara em snake_case
-- ❌ **NÃO use timestamps** (Flyway não reconhece)
-- ❌ **NÃO repita números** (cada versão é única)
+- ✅ Use numeros sequenciais: `V1`, `V2`, `V3`...
+- ✅ Use **duplo underscore** `__` apos o numero
+- ✅ Descricao clara em snake_case
+- ❌ **NAO use timestamps** (Flyway nao reconhece)
+- ❌ **NAO repita numeros** (cada versao e unica)
 
 ------------------------------------------------------------------------
 
 ## 🎯 Objetivo da Estrutura
 
--   Separar migrations por banco de dados\
--   Isolar configurações por tecnologia\
--   Permitir evolução independente de cada banco\
--   Preparar o projeto para CI/CD\
--   Organizar scripts por ambiente
+- Separar migrations por banco de dados
+- Isolar configuracoes por tecnologia
+- Permitir evolucao independente de cada banco
+- Preparar o projeto para CI/CD
+- Organizar scripts por ambiente e por dominio (`application` e `owner`)
 
 ------------------------------------------------------------------------
 
@@ -179,38 +182,64 @@ dados de forma independente:
 ### 🔹ADMIN
 
 ```bash
-        ADMIN_URL
-        ADMIN_USER
-        ADMIN_PASSWORD
+ADMIN_URL
+ADMIN_USER
+ADMIN_PASSWORD
+MIGRATION_INSTALLED_BY
 ```
 
 ## 🔧 Variaveis por Ambiente
 
-### 🔹DEV
+### 🔹APPLICATION
 
 ```bash
-        DB_USER_DEV
-        DB_PASSWORD_DEV
-        DB_USER_APP_DEV
-        DB_PASSWORD_APP_DEV
+APP_<ENV>_ADMIN_URL
+APP_<ENV>_ADMIN_USER
+APP_<ENV>_ADMIN_PASSWORD
+APP_<ENV>_USER
+APP_<ENV>_PASSWORD
+APP_<ENV>_DEFAULT_TABLESPACE
+APP_<ENV>_TEMP_TABLESPACE
+APP_<ENV>_DATABASE_NAME
 ```
 
-### 🔹HML
+### 🔹OWNER
 
 ```bash
-        DB_USER_HML
-        DB_PASSWORD_HML
-        DB_USER_APP_HML
-        DB_PASSWORD_APP_HML
+OWNER_<ENV>_ADMIN_URL
+OWNER_<ENV>_ADMIN_USER
+OWNER_<ENV>_ADMIN_PASSWORD
+OWNER_<ENV>_USER
+OWNER_<ENV>_PASSWORD
+OWNER_<ENV>_DEFAULT_TABLESPACE
+OWNER_<ENV>_TEMP_TABLESPACE
+OWNER_<ENV>_DATABASE_NAME
 ```
 
-### 🔹PROD
+------------------------------------------------------------------------
+
+## ✅ Execução de Validação por Ambiente
+
+Entre na pasta do Flyway:
 
 ```bash
-        DB_USER_PROD
-        DB_PASSWORD_PROD
-        DB_USER_APP_PROD
-        DB_PASSWORD_APP_PROD
+cd sgdb/oracle/flyway
+```
+
+### Validacao APPLICATION
+
+```bash
+flyway -configFiles=sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-validacao-app-dev.conf migrate
+flyway -configFiles=sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-validacao-app-hml.conf migrate
+flyway -configFiles=sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-validacao-app-prod.conf migrate
+```
+
+### Validacao OWNER
+
+```bash
+flyway -configFiles=sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-validacao-owner-dev.conf migrate
+flyway -configFiles=sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-validacao-owner-hml.conf migrate
+flyway -configFiles=sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-validacao-owner-prod.conf migrate
 ```
 
 ------------------------------------------------------------------------
@@ -220,18 +249,16 @@ dados de forma independente:
 - [Documentacao dos Arquivos de Configuracao (.conf)](sgdb/oracle/flyway/docs/documentacao_arquivos_de_configuracao.md)
 - [Documentacao das Variaveis de Configuracao](sgdb/oracle/flyway/docs/documentacao_das_variaveis_de_configuracao.md)
 - [Criar Pipelines CI/CD com Actions Runner](sgdb/oracle/flyway/docs/criar_pipelines_ci_cd_com_%20actions_runner.md)
-- Este documento concentra a lista dos arquivos `.conf` e o papel de cada configuracao no projeto.
+- [Como criar repositorio no GitHub com GH CLI](sgdb/oracle/flyway/docs/criar_repositorio_no_git.md)
 
 ------------------------------------------------------------------------
 
 ## 📚 Referências
-- [Documentação oficial do Flyway](https://flywaydb.org/documentation/)
-- [Boas práticas com migrations](https://flywaydb.org/documentation/concepts/migrations#versioned-migrations)
-- [Oracle e Flyway](https://flywaydb.org/documentation/database/oracle)
-- [Como criar repositorio no GitHub com GH CLI](sgdb/oracle/flyway/docs/criar_repositorio_no_git.md)
-- [Documentacao dos arquivos de configuracao](sgdb/oracle/flyway/docs/documentacao_arquivos_de_configuracao.md)
 
+- [Documentacao oficial do Flyway](https://flywaydb.org/documentation/)
+- [Boas praticas com migrations](https://flywaydb.org/documentation/concepts/migrations#versioned-migrations)
+- [Oracle e Flyway](https://flywaydb.org/documentation/database/oracle)
 
 ## 🚧 Status
 
-Em desenvolvimento ativo - Estrutura sendo consolidada.
+Em desenvolvimento ativo - Estrutura consolidada com validacoes iniciais para `application` e `owner` por ambiente.
