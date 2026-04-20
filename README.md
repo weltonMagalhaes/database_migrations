@@ -75,7 +75,8 @@ dados de forma independente:
 │           │               
 │           ├── 📁 docs/                                  # Documentacao especifica
 │           │   ├── 📄 criar_repositorio_no_git.md
-│           │   └── 📄 documentacao_arquivos_de_configuracao.md
+│           │   ├── 📄 documentacao_arquivos_de_configuracao.md
+│           │   └── 📄 documentacao_das_variaveis_de_configuracao.md
 │           ├── 📁 logs/                                  # Logs gerados pelo Flyway
 │           │   └── 📄 .gitkeep
 │           ├── 📁 scripts/                               # Scripts auxiliares versionados
@@ -209,6 +210,7 @@ dados de forma independente:
 ## 📘 Documentacao de Configuracao
 
 - [Documentacao dos Arquivos de Configuracao (.conf)](sgdb/oracle/flyway/docs/documentacao_arquivos_de_configuracao.md)
+- [Documentacao das Variaveis de Configuracao](sgdb/oracle/flyway/docs/documentacao_das_variaveis_de_configuracao.md)
 - Este documento concentra a lista dos arquivos `.conf` e o papel de cada configuracao no projeto.
 
 ------------------------------------------------------------------------
