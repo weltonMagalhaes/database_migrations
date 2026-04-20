@@ -126,6 +126,21 @@ Configuracoes principais comuns aos arquivos `owner-*` e `app-*`:
 - `flyway.placeholders.*`: parametriza nome do usuario, senha e tablespaces para os scripts SQL.
 - Nos arquivos `flyway-configuracao-validacao-app-*` e `flyway-configuracao-validacao-owner-*` foi adicionado `flyway.placeholders.ambiente` para registrar o nome logico do ambiente nas migrations de validacao.
 
+## Padrao de migrations SQL (V__ e R__)
+
+Este projeto usa os dois padroes oficiais do Flyway:
+
+- `V{numero}__{descricao}.sql`: migrations versionadas, com ordem por versao.
+- `R__{descricao}.sql`: migrations repeatable, sem numero de versao, para rotinas idempotentes.
+
+No dominio `admin/users/provision`, os arquivos `R__garantir_usuario_*.sql` sao usados para manter o estado do usuario sempre alinhado com os secrets do ambiente.
+
+Comportamento esperado no provisionamento de usuarios:
+
+- `V1__provisionar_usuario_*.sql`: bootstrap inicial do usuario.
+- `R__garantir_usuario_*.sql`: reconciliacao continua (senha, tablespace, account unlock e grants).
+- Uso de `-- ${flyway:timestamp}` nos `R__` para reexecutar em todo `migrate` e evitar drift de credenciais/permissoes.
+
 ## Relacao entre novos `.conf` e `.sql` de validacao
 
 Esta secao mapeia os novos arquivos de configuracao de validacao para os scripts SQL executados em cada ambiente.

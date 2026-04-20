@@ -109,7 +109,26 @@ dados de forma independente:
 │                               │       ├── 📄 flyway-configuracao-validacao-app-prod.conf
 │                               │       ├── 📄 flyway-configuracao-validacao-owner-dev.conf
 │                               │       ├── 📄 flyway-configuracao-validacao-owner-hml.conf
-│                               │       └── 📄 flyway-configuracao-validacao-owner-prod.conf
+│                               │       ├── 📄 flyway-configuracao-validacao-owner-prod.conf
+│                               │       └── 📁 provision/
+│                               │           ├── 📁 app-dev/
+│                               │           │   ├── 📄 V1__provisionar_usuario_app_dev.sql
+│                               │           │   └── 📄 R__garantir_usuario_app_dev.sql
+│                               │           ├── 📁 app-hml/
+│                               │           │   ├── 📄 V1__provisionar_usuario_app_hml.sql
+│                               │           │   └── 📄 R__garantir_usuario_app_hml.sql
+│                               │           ├── 📁 app-prod/
+│                               │           │   ├── 📄 V1__provisionar_usuario_app_prod.sql
+│                               │           │   └── 📄 R__garantir_usuario_app_prod.sql
+│                               │           ├── 📁 owner-dev/
+│                               │           │   ├── 📄 V1__provisionar_usuario_owner_dev.sql
+│                               │           │   └── 📄 R__garantir_usuario_owner_dev.sql
+│                               │           ├── 📁 owner-hml/
+│                               │           │   ├── 📄 V1__provisionar_usuario_owner_hml.sql
+│                               │           │   └── 📄 R__garantir_usuario_owner_hml.sql
+│                               │           └── 📁 owner-prod/
+│                               │               ├── 📄 V1__provisionar_usuario_owner_prod.sql
+│                               │               └── 📄 R__garantir_usuario_owner_prod.sql
 │                               ├── 📁 application/
 │                               │   ├── 📁 app-dev/
 │                               │   │   ├── 📄 .gitkeep
