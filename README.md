@@ -284,6 +284,22 @@ Observacao:
 
 - O job usa `environment` dinamico (`DEV`, `HML`, `PROD`), entao a aprovacao configurada em cada ambiente sera exigida.
 
+## Fluxo Recomendado e Troubleshooting
+
+Ordem recomendada por ambiente/dominio:
+
+1. Executar `migrate` no arquivo `flyway-configuracao-usuario-<dominio>-<ambiente>.conf` (provisionamento/reconciliacao de usuario).
+2. Executar `migrate` no arquivo `flyway-configuracao-validacao-<dominio>-<ambiente>.conf` (migrations do schema).
+
+Erros comuns e como resolver:
+
+- `Migration checksum mismatch for migration version 1`:
+  executar `repair` usando o mesmo `configFiles` da trilha de usuario e, em seguida, executar `migrate` novamente.
+- `ORA-01950: no privileges on tablespace`:
+  garantir que os scripts `R__garantir_usuario_*.sql` foram aplicados (eles concedem `QUOTA UNLIMITED ON <DEFAULT_TABLESPACE>`), depois repetir o `migrate`.
+- `Unable to connect to the database. Configure the url, user and password` em execucao local:
+  carregar as variaveis do arquivo `conf/projects/controle-financeiro/env/variaveis.env` na sessao antes de rodar Flyway.
+
 ------------------------------------------------------------------------
 
 ## 📘 Documentacao de Configuracao

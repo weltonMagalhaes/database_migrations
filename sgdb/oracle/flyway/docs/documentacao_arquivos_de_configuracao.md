@@ -141,6 +141,22 @@ Comportamento esperado no provisionamento de usuarios:
 - `R__garantir_usuario_*.sql`: reconciliacao continua (senha, tablespace, account unlock e grants).
 - Uso de `-- ${flyway:timestamp}` nos `R__` para reexecutar em todo `migrate` e evitar drift de credenciais/permissoes.
 
+## Operacao recomendada e resolucao de erros
+
+Fluxo recomendado por ambiente/dominio:
+
+1. Rodar a trilha de usuario (`flyway-configuracao-usuario-*.conf`) com `migrate`.
+2. Rodar a trilha de validacao (`flyway-configuracao-validacao-*.conf`) com `migrate`.
+
+Erros observados e resolucao:
+
+- `Migration checksum mismatch for migration version 1`:
+  executar `repair` na mesma trilha de usuario e depois executar `migrate` novamente.
+- `ORA-01950: no privileges on tablespace`:
+  garantir aplicacao dos scripts `R__garantir_usuario_*.sql` (eles aplicam `QUOTA UNLIMITED ON <DEFAULT_TABLESPACE>`) e repetir o `migrate`.
+- `Unable to connect to the database. Configure the url, user and password` em execucao local:
+  carregar variaveis de `conf/projects/controle-financeiro/env/variaveis.env` na sessao antes de executar Flyway.
+
 ## Relacao entre novos `.conf` e `.sql` de validacao
 
 Esta secao mapeia os novos arquivos de configuracao de validacao para os scripts SQL executados em cada ambiente.
