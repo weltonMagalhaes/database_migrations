@@ -22,6 +22,7 @@ utilizando **Flyway**, organizado por tipo de SGDB.
 - [Variaveis Globais](#-variaveis-globais)
 - [Variaveis por Ambiente](#-variaveis-por-ambiente)
 - [Execucao de Validacao por Ambiente](#-execução-de-validação-por-ambiente)
+- [Execucao via Workflow](#-execucao-via-workflow)
 - [Documentacao de Configuracao](#-documentacao-de-configuracao)
 - [Referencias](#-referências)
 - [Status](#-status)
@@ -68,7 +69,7 @@ dados de forma independente:
 📁 database_migrations/
 ├── 📁 .github/                                          # Automatizacoes e pipelines do repositorio
 │   └── 📁 workflows/                                   # CI/CD futuro
-│       └── 📄 .gitkeep
+│       └── 📄 oracle-schema-provision.yml
 ├── 📁 sgdb/                                             # Organizacao por tecnologia de banco
 │   └── 📁 oracle/                                       # SGDB: Oracle
 │       ├── 📄 .gitignore                                # Regras de versionamento para arquivos locais do Oracle
@@ -241,6 +242,28 @@ flyway -configFiles=sql/migrations/db/projects/controle-financeiro/admin/users/f
 flyway -configFiles=sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-validacao-owner-hml.conf migrate
 flyway -configFiles=sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-validacao-owner-prod.conf migrate
 ```
+
+------------------------------------------------------------------------
+
+## ⚙️ Execucao via Workflow
+
+Workflow disponivel:
+
+- `.github/workflows/oracle-schema-provision.yml`
+
+Execucao:
+
+1. Acesse a aba `Actions` no GitHub.
+2. Selecione `Oracle Schema Provision`.
+3. Clique em `Run workflow`.
+4. Preencha:
+   `ambiente`: `DEV`, `HML` ou `PROD`
+   `dominio`: `application`, `owner` ou `all`
+   `comando`: `migrate`, `validate` ou `info`
+
+Observacao:
+
+- O job usa `environment` dinamico (`DEV`, `HML`, `PROD`), entao a aprovacao configurada em cada ambiente sera exigida.
 
 ------------------------------------------------------------------------
 
