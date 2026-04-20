@@ -83,6 +83,206 @@ e de criacao/gestao de usuarios.
 - Documentacao relacionada:
   `sgdb/oracle/flyway/docs/documentacao_arquivos_de_configuracao.md`
 
+## Como criar secrets no GitHub
+
+### Opcao 1: via Browser (GitHub Web)
+
+1. Acesse o repositorio no GitHub.
+2. Abra `Settings` > `Secrets and variables` > `Actions`.
+3. Clique em `New repository secret`.
+4. Informe `Name` (ex.: `ADMIN_URL`) e `Secret` (valor real).
+5. Clique em `Add secret`.
+6. Repita para todas as variaveis desta documentacao.
+
+Para secrets por ambiente (`DEV`, `HML`, `PROD`):
+
+1. Em `Settings` > `Environments`, crie/abra o ambiente.
+2. Dentro do ambiente, abra `Environment secrets`.
+3. Clique em `Add secret`, informe nome/valor e salve.
+
+### Opcao 2: via Actions Runner no Windows (PowerShell + GitHub CLI)
+
+Pre-requisitos:
+
+- `gh` (GitHub CLI) instalado no runner.
+- Usuario autenticado com permissao de administrar secrets no repositorio.
+
+Comandos iniciais:
+
+```powershell
+gh auth login
+gh repo set-default <owner>/<repo>
+```
+
+Criar secrets de repositorio (exemplos):
+
+```powershell
+# O valor sera solicitado de forma interativa (nao aparece em tela)
+gh secret set ADMIN_URL
+gh secret set ADMIN_USER
+gh secret set ADMIN_PASSWORD
+gh secret set MIGRATION_INSTALLED_BY
+```
+
+Criar secret de ambiente (exemplo):
+
+```powershell
+gh secret set APP_DEV_ADMIN_URL --env DEV
+gh secret set APP_HML_ADMIN_URL --env HML
+gh secret set APP_PROD_ADMIN_URL --env PROD
+```
+
+Criacao em lote no PowerShell (ajuste a lista):
+
+```powershell
+$secrets = @(
+  "ADMIN_URL",
+  "ADMIN_USER",
+  "ADMIN_PASSWORD",
+  "MIGRATION_INSTALLED_BY",
+  "APP_DEV_ADMIN_URL",
+  "APP_DEV_ADMIN_USER",
+  "APP_DEV_ADMIN_PASSWORD"
+)
+
+foreach ($name in $secrets) {
+  gh secret set $name
+}
+```
+
+Script completo (todas as variaveis do projeto):
+
+```powershell
+# 1) Secrets de repositorio (globais)
+$repoSecrets = @(
+  "ADMIN_URL",
+  "ADMIN_USER",
+  "ADMIN_PASSWORD",
+  "MIGRATION_INSTALLED_BY"
+)
+
+foreach ($name in $repoSecrets) {
+  gh secret set $name
+}
+
+# 2) Secrets por ambiente (APP_* e OWNER_*)
+$environments = @("DEV", "HML", "PROD")
+$grupos = @("APP", "OWNER")
+$sufixos = @(
+  "ADMIN_URL",
+  "ADMIN_USER",
+  "ADMIN_PASSWORD",
+  "USER",
+  "PASSWORD",
+  "DEFAULT_TABLESPACE",
+  "TEMP_TABLESPACE"
+)
+
+foreach ($env in $environments) {
+  foreach ($grupo in $grupos) {
+    foreach ($sufixo in $sufixos) {
+      $name = "${grupo}_${env}_${sufixo}"
+      gh secret set $name --env $env
+    }
+  }
+}
+```
+
+### Opcao 3: via Actions Runner no Linux (Bash + GitHub CLI)
+
+Pre-requisitos:
+
+- `gh` instalado no runner.
+- Usuario autenticado com permissao de administrar secrets no repositorio.
+
+Comandos iniciais:
+
+```bash
+gh auth login
+gh repo set-default <owner>/<repo>
+```
+
+Criar secrets de repositorio (exemplos):
+
+```bash
+gh secret set ADMIN_URL
+gh secret set ADMIN_USER
+gh secret set ADMIN_PASSWORD
+gh secret set MIGRATION_INSTALLED_BY
+```
+
+Criar secret de ambiente (exemplo):
+
+```bash
+gh secret set APP_DEV_ADMIN_URL --env DEV
+gh secret set APP_HML_ADMIN_URL --env HML
+gh secret set APP_PROD_ADMIN_URL --env PROD
+```
+
+Criacao em lote no Bash (ajuste a lista):
+
+```bash
+secrets=(
+  ADMIN_URL
+  ADMIN_USER
+  ADMIN_PASSWORD
+  MIGRATION_INSTALLED_BY
+  APP_DEV_ADMIN_URL
+  APP_DEV_ADMIN_USER
+  APP_DEV_ADMIN_PASSWORD
+)
+
+for name in "${secrets[@]}"; do
+  gh secret set "$name"
+done
+```
+
+Script completo (todas as variaveis do projeto):
+
+```bash
+# 1) Secrets de repositorio (globais)
+repo_secrets=(
+  ADMIN_URL
+  ADMIN_USER
+  ADMIN_PASSWORD
+  MIGRATION_INSTALLED_BY
+)
+
+for name in "${repo_secrets[@]}"; do
+  gh secret set "$name"
+done
+
+# 2) Secrets por ambiente (APP_* e OWNER_*)
+environments=(DEV HML PROD)
+groups=(APP OWNER)
+suffixes=(
+  ADMIN_URL
+  ADMIN_USER
+  ADMIN_PASSWORD
+  USER
+  PASSWORD
+  DEFAULT_TABLESPACE
+  TEMP_TABLESPACE
+)
+
+for env in "${environments[@]}"; do
+  for group in "${groups[@]}"; do
+    for suffix in "${suffixes[@]}"; do
+      name="${group}_${env}_${suffix}"
+      gh secret set "$name" --env "$env"
+    done
+  done
+done
+```
+
+### Validacao rapida
+
+- Listar secrets de repositorio:
+  `gh secret list`
+- Listar secrets de ambiente:
+  `gh secret list --env DEV`
+- Executar o workflow e validar se nao ha erro de variavel ausente.
+
 ## Observacao de versionamento
 
 - Nao versionar scripts locais de carga de secrets com valores reais.
