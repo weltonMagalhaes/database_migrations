@@ -33,7 +33,9 @@ Escolha uma maquina por ambiente (`DEV`, `HML`, `PROD`) para isolar execucoes.
 
 1. Criar pasta dedicada, por exemplo:
    `C:\actions-runner\controle-financeiro-dev`
-2. Executar o PowerShell como administrador apenas para instalacao de servico.
+2. Recomendamos configurar o executor em `C:\actions-runner`.
+   Isso ajuda a evitar problemas relacionados as permissoes da pasta de identidade do servico e as restricoes de caminho longo no Windows.
+3. Executar o PowerShell como administrador apenas para instalacao de servico.
 
 ### 2) Baixar e extrair runner
 
@@ -41,6 +43,29 @@ Escolha uma maquina por ambiente (`DEV`, `HML`, `PROD`) para isolar execucoes.
    `Repositorio > Settings > Actions > Runners > New self-hosted runner`
 2. Selecionar Windows x64 e copiar os comandos sugeridos.
 3. Baixar e extrair dentro da pasta criada.
+
+Exemplo (PowerShell) com explicacao:
+
+```powershell
+# Create a folder under the drive root
+mkdir actions-runner; cd actions-runner
+
+# Download the latest runner package
+Invoke-WebRequest -Uri https://github.com/actions/runner/releases/download/v2.333.1/actions-runner-win-x64-2.333.1.zip -OutFile actions-runner-win-x64-2.333.1.zip
+
+# Optional: Validate the hash
+if((Get-FileHash -Path actions-runner-win-x64-2.333.1.zip -Algorithm SHA256).Hash.ToUpper() -ne 'd0c4fcb91f8f0754d478db5d61db533bba14cad6c4676a9b93c0b7c2a3969aa0'.ToUpper()){ throw 'Computed checksum did not match' }
+
+# Extract the installer
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+[System.IO.Compression.ZipFile]::ExtractToDirectory("$PWD/actions-runner-win-x64-2.333.1.zip", "$PWD")
+```
+
+- `mkdir actions-runner; cd actions-runner`: cria e entra no diretorio do runner na raiz do disco.
+- `Invoke-WebRequest`: baixa o pacote `.zip` do runner.
+- `Get-FileHash ... SHA256`: valida integridade do arquivo baixado comparando o hash oficial.
+- `ExtractToDirectory(...)`: extrai o conteudo do `.zip` no diretorio atual.
+- Ajuste a versao (`v2.333.1`) e o hash conforme a versao mais recente exibida no GitHub.
 
 ### 3) Configurar runner
 
@@ -51,6 +76,20 @@ Escolha uma maquina por ambiente (`DEV`, `HML`, `PROD`) para isolar execucoes.
    - `--labels self-hosted,windows,dev,oracle` (ajuste labels)
    - `--work _work`
 2. Confirmar que o registro aparece em `Settings > Actions > Runners`.
+
+Exemplo de configuracao e execucao manual:
+
+```powershell
+# Create the runner and start the configuration experience
+.\config.cmd --url https://github.com/weltonMagalhaes/database_migrations --token <token-temporario>
+
+# Run it!
+.\run.cmd
+```
+
+- `.\config.cmd`: registra o runner no repositorio. O token e temporario e expira rapido.
+- `.\run.cmd`: inicia o runner em primeiro plano para teste rapido.
+- Para uso continuo, prefira instalar como servico com `.\svc install` e `.\svc start`.
 
 ### 4) Instalar como servico
 
@@ -130,6 +169,16 @@ jobs:
       - name: Validar variaveis
         run: echo "Runner DEV operacional"
 ```
+
+Se quiser aceitar qualquer runner self-hosted registrado:
+
+```yaml
+runs-on: self-hosted
+```
+
+Explicacao:
+- `runs-on: self-hosted` envia o job para qualquer maquina com runner self-hosted online.
+- Para maior controle, prefira labels mais especificas (ex.: `windows`, `linux`, `dev`, `oracle`).
 
 ## Integracao com scripts de secrets
 
