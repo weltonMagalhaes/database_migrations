@@ -39,7 +39,7 @@ concurrency:
 jobs:
   provision:
     name: Provision ${{ inputs.ambiente }} (${{ inputs.dominio }})
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Windows, X64]
     environment: ${{ inputs.ambiente }}
 
     steps:
