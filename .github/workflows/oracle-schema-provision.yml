@@ -126,16 +126,83 @@ jobs:
           $ownerConf = "sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-validacao-owner-$envLower.conf"
           $flywayCmd = "${{ inputs.comando }}"
 
+          function Import-EnvFile([string]$filePath) {
+            Get-Content -Path $filePath | ForEach-Object {
+              if ($_ -match '^\s*([A-Za-z_][A-Za-z0-9_]*)=(.*)$') {
+                $varName = $Matches[1]
+                $varValue = $Matches[2]
+                Set-Item -Path "Env:$varName" -Value $varValue
+              }
+            }
+          }
+
+          function Get-LocalFlywayPath() {
+            $cmd = Get-Command flyway -ErrorAction SilentlyContinue
+            if ($cmd) {
+              return $cmd.Source
+            }
+
+            $candidate = Get-ChildItem -Path "C:\Program Files" -Directory -Filter "flyway*" -ErrorAction SilentlyContinue |
+              Sort-Object Name -Descending |
+              ForEach-Object { Join-Path $_.FullName "flyway.cmd" } |
+              Where-Object { Test-Path $_ } |
+              Select-Object -First 1
+
+            return $candidate
+          }
+
+          function Invoke-LocalFlyway([string]$confFile) {
+            $flywayPath = Get-LocalFlywayPath
+            if (-not $flywayPath) {
+              throw "Flyway local nao encontrado. Instale o Flyway no runner ou adicione ao PATH."
+            }
+
+            Write-Host "Executando Flyway local: $flywayPath"
+            Import-EnvFile -filePath $envFile
+
+            Push-Location $hostWorkdir
+            try {
+              & $flywayPath "-configFiles=$baseConf,$confFile" $flywayCmd
+              if ($LASTEXITCODE -ne 0) {
+                throw "Flyway local retornou codigo $LASTEXITCODE."
+              }
+            }
+            finally {
+              Pop-Location
+            }
+          }
+
           function Run-Flyway([string]$confFile) {
             Write-Host "Executando $flywayCmd com $confFile"
-            docker run --rm `
-              --env-file "$envFile" `
-              -v "${hostWorkdir}:${containerWorkdir}" `
-              -w "$containerWorkdir" `
-              --entrypoint /flyway/flyway `
-              redgate/flyway:10.15.0 `
-              "-configFiles=$baseConf,$confFile" `
-              "$flywayCmd"
+
+            $dockerCmd = Get-Command docker -ErrorAction SilentlyContinue
+            if ($dockerCmd) {
+              try {
+                & docker run --rm `
+                  --env-file "$envFile" `
+                  -v "${hostWorkdir}:${containerWorkdir}" `
+                  -w "$containerWorkdir" `
+                  --entrypoint /flyway/flyway `
+                  redgate/flyway:10.15.0 `
+                  "-configFiles=$baseConf,$confFile" `
+                  "$flywayCmd"
+
+                if ($LASTEXITCODE -ne 0) {
+                  throw "Docker Flyway retornou codigo $LASTEXITCODE."
+                }
+
+                return
+              }
+              catch {
+                Write-Warning "Falha ao executar via Docker: $($_.Exception.Message)"
+                Write-Warning "Tentando fallback para Flyway local..."
+              }
+            }
+            else {
+              Write-Warning "Docker nao encontrado no PATH do runner. Usando Flyway local."
+            }
+
+            Invoke-LocalFlyway -confFile $confFile
           }
 
           switch ("${{ inputs.dominio }}") {
