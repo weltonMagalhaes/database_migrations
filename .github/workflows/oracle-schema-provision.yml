@@ -1,0 +1,158 @@
+name: Oracle Schema Provision
+
+on:
+  workflow_dispatch:
+    inputs:
+      ambiente:
+        description: "Ambiente de execucao (usa GitHub Environment para aprovacao)"
+        required: true
+        type: choice
+        options:
+          - DEV
+          - HML
+          - PROD
+      dominio:
+        description: "Dominio de schema a executar"
+        required: true
+        type: choice
+        options:
+          - application
+          - owner
+          - all
+      comando:
+        description: "Comando Flyway"
+        required: true
+        default: migrate
+        type: choice
+        options:
+          - migrate
+          - info
+          - validate
+
+permissions:
+  contents: read
+
+concurrency:
+  group: oracle-schema-provision-${{ inputs.ambiente }}
+  cancel-in-progress: false
+
+jobs:
+  provision:
+    name: Provision ${{ inputs.ambiente }} (${{ inputs.dominio }})
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.ambiente }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Criar arquivo temporario de variaveis para o Flyway
+        shell: bash
+        run: |
+          cat > "${GITHUB_WORKSPACE}/sgdb/oracle/flyway/.ci.env" <<EOF
+          ADMIN_URL=${{ secrets.ADMIN_URL }}
+          ADMIN_USER=${{ secrets.ADMIN_USER }}
+          ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}
+          MIGRATION_INSTALLED_BY=${{ vars.MIGRATION_INSTALLED_BY || 'github-actions' }}
+
+          APP_DEV_ADMIN_URL=${{ secrets.APP_DEV_ADMIN_URL }}
+          APP_DEV_ADMIN_USER=${{ secrets.APP_DEV_ADMIN_USER }}
+          APP_DEV_ADMIN_PASSWORD=${{ secrets.APP_DEV_ADMIN_PASSWORD }}
+          APP_DEV_USER=${{ secrets.APP_DEV_USER }}
+          APP_DEV_PASSWORD=${{ secrets.APP_DEV_PASSWORD }}
+          APP_DEV_DEFAULT_TABLESPACE=${{ secrets.APP_DEV_DEFAULT_TABLESPACE }}
+          APP_DEV_TEMP_TABLESPACE=${{ secrets.APP_DEV_TEMP_TABLESPACE }}
+          APP_DEV_DATABASE_NAME=${{ secrets.APP_DEV_DATABASE_NAME }}
+
+          APP_HML_ADMIN_URL=${{ secrets.APP_HML_ADMIN_URL }}
+          APP_HML_ADMIN_USER=${{ secrets.APP_HML_ADMIN_USER }}
+          APP_HML_ADMIN_PASSWORD=${{ secrets.APP_HML_ADMIN_PASSWORD }}
+          APP_HML_USER=${{ secrets.APP_HML_USER }}
+          APP_HML_PASSWORD=${{ secrets.APP_HML_PASSWORD }}
+          APP_HML_DEFAULT_TABLESPACE=${{ secrets.APP_HML_DEFAULT_TABLESPACE }}
+          APP_HML_TEMP_TABLESPACE=${{ secrets.APP_HML_TEMP_TABLESPACE }}
+          APP_HML_DATABASE_NAME=${{ secrets.APP_HML_DATABASE_NAME }}
+
+          APP_PROD_ADMIN_URL=${{ secrets.APP_PROD_ADMIN_URL }}
+          APP_PROD_ADMIN_USER=${{ secrets.APP_PROD_ADMIN_USER }}
+          APP_PROD_ADMIN_PASSWORD=${{ secrets.APP_PROD_ADMIN_PASSWORD }}
+          APP_PROD_USER=${{ secrets.APP_PROD_USER }}
+          APP_PROD_PASSWORD=${{ secrets.APP_PROD_PASSWORD }}
+          APP_PROD_DEFAULT_TABLESPACE=${{ secrets.APP_PROD_DEFAULT_TABLESPACE }}
+          APP_PROD_TEMP_TABLESPACE=${{ secrets.APP_PROD_TEMP_TABLESPACE }}
+          APP_PROD_DATABASE_NAME=${{ secrets.APP_PROD_DATABASE_NAME }}
+
+          OWNER_DEV_ADMIN_URL=${{ secrets.OWNER_DEV_ADMIN_URL }}
+          OWNER_DEV_ADMIN_USER=${{ secrets.OWNER_DEV_ADMIN_USER }}
+          OWNER_DEV_ADMIN_PASSWORD=${{ secrets.OWNER_DEV_ADMIN_PASSWORD }}
+          OWNER_DEV_USER=${{ secrets.OWNER_DEV_USER }}
+          OWNER_DEV_PASSWORD=${{ secrets.OWNER_DEV_PASSWORD }}
+          OWNER_DEV_DEFAULT_TABLESPACE=${{ secrets.OWNER_DEV_DEFAULT_TABLESPACE }}
+          OWNER_DEV_TEMP_TABLESPACE=${{ secrets.OWNER_DEV_TEMP_TABLESPACE }}
+          OWNER_DEV_DATABASE_NAME=${{ secrets.OWNER_DEV_DATABASE_NAME }}
+
+          OWNER_HML_ADMIN_URL=${{ secrets.OWNER_HML_ADMIN_URL }}
+          OWNER_HML_ADMIN_USER=${{ secrets.OWNER_HML_ADMIN_USER }}
+          OWNER_HML_ADMIN_PASSWORD=${{ secrets.OWNER_HML_ADMIN_PASSWORD }}
+          OWNER_HML_USER=${{ secrets.OWNER_HML_USER }}
+          OWNER_HML_PASSWORD=${{ secrets.OWNER_HML_PASSWORD }}
+          OWNER_HML_DEFAULT_TABLESPACE=${{ secrets.OWNER_HML_DEFAULT_TABLESPACE }}
+          OWNER_HML_TEMP_TABLESPACE=${{ secrets.OWNER_HML_TEMP_TABLESPACE }}
+          OWNER_HML_DATABASE_NAME=${{ secrets.OWNER_HML_DATABASE_NAME }}
+
+          OWNER_PROD_ADMIN_URL=${{ secrets.OWNER_PROD_ADMIN_URL }}
+          OWNER_PROD_ADMIN_USER=${{ secrets.OWNER_PROD_ADMIN_USER }}
+          OWNER_PROD_ADMIN_PASSWORD=${{ secrets.OWNER_PROD_ADMIN_PASSWORD }}
+          OWNER_PROD_USER=${{ secrets.OWNER_PROD_USER }}
+          OWNER_PROD_PASSWORD=${{ secrets.OWNER_PROD_PASSWORD }}
+          OWNER_PROD_DEFAULT_TABLESPACE=${{ secrets.OWNER_PROD_DEFAULT_TABLESPACE }}
+          OWNER_PROD_TEMP_TABLESPACE=${{ secrets.OWNER_PROD_TEMP_TABLESPACE }}
+          OWNER_PROD_DATABASE_NAME=${{ secrets.OWNER_PROD_DATABASE_NAME }}
+          EOF
+
+      - name: Executar Flyway por dominio/ambiente
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          WORKDIR="${GITHUB_WORKSPACE}/sgdb/oracle/flyway"
+          ENV_FILE="${WORKDIR}/.ci.env"
+          BASE_CONF="conf/flyway-configuracao_base-controle-finaceiro.conf"
+          ENV_LOWER="$(echo "${{ inputs.ambiente }}" | tr '[:upper:]' '[:lower:]')"
+          APP_CONF="sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-validacao-app-${ENV_LOWER}.conf"
+          OWNER_CONF="sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-validacao-owner-${ENV_LOWER}.conf"
+          FLYWAY_CMD="${{ inputs.comando }}"
+
+          run_flyway() {
+            local conf_file="$1"
+            echo "Executando ${FLYWAY_CMD} com ${conf_file}"
+            docker run --rm \
+              --env-file "${ENV_FILE}" \
+              -v "${WORKDIR}:/flyway" \
+              -w /flyway \
+              flyway/flyway:10.15.0 \
+              -configFiles="${BASE_CONF},${conf_file}" \
+              "${FLYWAY_CMD}"
+          }
+
+          case "${{ inputs.dominio }}" in
+            application)
+              run_flyway "${APP_CONF}"
+              ;;
+            owner)
+              run_flyway "${OWNER_CONF}"
+              ;;
+            all)
+              run_flyway "${APP_CONF}"
+              run_flyway "${OWNER_CONF}"
+              ;;
+            *)
+              echo "Dominio invalido: ${{ inputs.dominio }}"
+              exit 1
+              ;;
+          esac
+
+      - name: Remover arquivo temporario de variaveis
+        if: always()
+        shell: bash
+        run: rm -f "${GITHUB_WORKSPACE}/sgdb/oracle/flyway/.ci.env"
