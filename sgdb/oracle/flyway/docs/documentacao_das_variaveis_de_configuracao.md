@@ -123,6 +123,30 @@ gh auth login
 gh repo set-default <owner>/<repo>
 ```
 
+Passo a passo simples (Windows, para iniciantes):
+
+1. Abra o PowerShell na pasta raiz do repositorio.
+2. Entre com sua conta no GitHub CLI:
+   `gh auth login`
+3. Defina o repositorio atual:
+   `gh repo set-default weltonMagalhaes/database_migrations`
+4. Garanta permissao de execucao apenas para esta sessao do terminal:
+   `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`
+5. Execute o script do projeto:
+   `.\sgdb\oracle\flyway\scripts\definir-github-secrets.ps1`
+6. Valide o resultado:
+   `gh secret list`
+   `gh secret list --env DEV`
+   `gh secret list --env HML`
+   `gh secret list --env PROD`
+
+Importante:
+
+- Rode os comandos em linhas separadas.
+- Se quiser em uma unica linha, use `;` para separar comandos.
+- Exemplo correto:
+  `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass; .\sgdb\oracle\flyway\scripts\definir-github-secrets.ps1`
+
 Script pronto do projeto (leitura automatica de `variaveis.env`):
 
 ```powershell
@@ -202,6 +226,29 @@ foreach ($env in $environments) {
   }
 }
 ```
+
+Erros comuns e como resolver (Windows):
+
+1. Erro:
+   `A positional parameter cannot be found...`
+   Causa comum:
+   comando `Set-ExecutionPolicy` e script na mesma linha sem separador.
+   Como corrigir:
+   rode em duas linhas ou use `;`.
+
+2. Erro:
+   `failed to fetch public key: HTTP 404 ... /environments/DEV/secrets/public-key`
+   Causa comum:
+   ambiente nao existe no repositorio, nome diferente, ou permissao insuficiente para environment secrets.
+   Como corrigir:
+   - Crie os ambientes `DEV`, `HML` e `PROD` em `Settings > Environments`.
+   - Confirme via CLI:
+     `gh api repos/weltonMagalhaes/database_migrations/environments`
+   - Teste acesso ao public key do ambiente:
+     `gh api repos/weltonMagalhaes/database_migrations/environments/DEV/secrets/public-key`
+   - Se continuar com 404, valide permissao/token:
+     `gh auth status -h github.com`
+     `gh auth refresh -h github.com -s repo,workflow`
 
 ### Opcao 3: via Actions Runner no Linux (Bash + GitHub CLI)
 
