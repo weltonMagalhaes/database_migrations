@@ -47,9 +47,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Criar arquivo temporario de variaveis para o Flyway
-        shell: bash
+        shell: pwsh
         run: |
-          cat > "${GITHUB_WORKSPACE}/sgdb/oracle/flyway/.ci.env" <<EOF
+          $ErrorActionPreference = "Stop"
+          $envFile = Join-Path $env:GITHUB_WORKSPACE "sgdb/oracle/flyway/.ci.env"
+          @"
           ADMIN_URL=${{ secrets.ADMIN_URL }}
           ADMIN_USER=${{ secrets.ADMIN_USER }}
           ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}
@@ -108,53 +110,46 @@ jobs:
           OWNER_PROD_DEFAULT_TABLESPACE=${{ secrets.OWNER_PROD_DEFAULT_TABLESPACE }}
           OWNER_PROD_TEMP_TABLESPACE=${{ secrets.OWNER_PROD_TEMP_TABLESPACE }}
           OWNER_PROD_DATABASE_NAME=${{ secrets.OWNER_PROD_DATABASE_NAME }}
-          EOF
+          "@ | Set-Content -Path $envFile -Encoding UTF8
 
       - name: Executar Flyway por dominio/ambiente
-        shell: bash
+        shell: pwsh
         run: |
-          set -euo pipefail
+          $ErrorActionPreference = "Stop"
 
-          HOST_WORKDIR="${GITHUB_WORKSPACE}/sgdb/oracle/flyway"
-          CONTAINER_WORKDIR="/workspace"
-          ENV_FILE="${HOST_WORKDIR}/.ci.env"
-          BASE_CONF="conf/flyway-configuracao_base-controle-finaceiro.conf"
-          ENV_LOWER="$(echo "${{ inputs.ambiente }}" | tr '[:upper:]' '[:lower:]')"
-          APP_CONF="sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-validacao-app-${ENV_LOWER}.conf"
-          OWNER_CONF="sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-validacao-owner-${ENV_LOWER}.conf"
-          FLYWAY_CMD="${{ inputs.comando }}"
+          $hostWorkdir = Join-Path $env:GITHUB_WORKSPACE "sgdb/oracle/flyway"
+          $containerWorkdir = "/workspace"
+          $envFile = Join-Path $hostWorkdir ".ci.env"
+          $baseConf = "conf/flyway-configuracao_base-controle-finaceiro.conf"
+          $envLower = "${{ inputs.ambiente }}".ToLowerInvariant()
+          $appConf = "sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-validacao-app-$envLower.conf"
+          $ownerConf = "sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-validacao-owner-$envLower.conf"
+          $flywayCmd = "${{ inputs.comando }}"
 
-          run_flyway() {
-            local conf_file="$1"
-            echo "Executando ${FLYWAY_CMD} com ${conf_file}"
-            docker run --rm \
-              --env-file "${ENV_FILE}" \
-              -v "${HOST_WORKDIR}:${CONTAINER_WORKDIR}" \
-              -w "${CONTAINER_WORKDIR}" \
-              --entrypoint /flyway/flyway \
-              redgate/flyway:10.15.0 \
-              -configFiles="${BASE_CONF},${conf_file}" \
-              "${FLYWAY_CMD}"
+          function Run-Flyway([string]$confFile) {
+            Write-Host "Executando $flywayCmd com $confFile"
+            docker run --rm `
+              --env-file "$envFile" `
+              -v "${hostWorkdir}:${containerWorkdir}" `
+              -w "$containerWorkdir" `
+              --entrypoint /flyway/flyway `
+              redgate/flyway:10.15.0 `
+              "-configFiles=$baseConf,$confFile" `
+              "$flywayCmd"
           }
 
-          case "${{ inputs.dominio }}" in
-            application)
-              run_flyway "${APP_CONF}"
-              ;;
-            owner)
-              run_flyway "${OWNER_CONF}"
-              ;;
-            all)
-              run_flyway "${APP_CONF}"
-              run_flyway "${OWNER_CONF}"
-              ;;
-            *)
-              echo "Dominio invalido: ${{ inputs.dominio }}"
-              exit 1
-              ;;
-          esac
+          switch ("${{ inputs.dominio }}") {
+            "application" { Run-Flyway $appConf }
+            "owner"       { Run-Flyway $ownerConf }
+            "all"         { Run-Flyway $appConf; Run-Flyway $ownerConf }
+            default       { throw "Dominio invalido: ${{ inputs.dominio }}" }
+          }
 
       - name: Remover arquivo temporario de variaveis
         if: always()
-        shell: bash
-        run: rm -f "${GITHUB_WORKSPACE}/sgdb/oracle/flyway/.ci.env"
+        shell: pwsh
+        run: |
+          $envFile = Join-Path $env:GITHUB_WORKSPACE "sgdb/oracle/flyway/.ci.env"
+          if (Test-Path $envFile) {
+            Remove-Item -LiteralPath $envFile -Force
+          }
