@@ -42,15 +42,19 @@ utilizando **Flyway**, organizado por tipo de SGDB.
 git clone https://github.com/seu-usuario/database_migrations.git
 cd database_migrations
 
-# 2. Configure os secrets (para GitHub Actions)
-cd sgdb/oracle/flyway/conf/projects/controle-financeiro/env
-cp set-github-secrets.template.ps1 set-github-secrets.ps1
+# 2. Crie o arquivo local de variaveis (nao versionado)
+cp sgdb/oracle/flyway/scripts/variaveis-template.env sgdb/oracle/flyway/conf/projects/controle-financeiro/env/variaveis.env
 
-# 3. Edite o arquivo com suas credenciais reais
-# Este arquivo .ps1 esta no .gitignore - nao sera versionado
+# 3. Edite o arquivo de variaveis com suas credenciais reais
+# O variaveis.env esta no .gitignore - nao sera versionado
 
-# 4. Volte a pasta do Flyway e execute uma migration
-cd ../../../..
+# 4. Configure os secrets no GitHub (Linux/macOS)
+./sgdb/oracle/flyway/scripts/definir-github-secrets.sh
+# 4b. Configure os secrets no GitHub (Windows PowerShell)
+.\sgdb\oracle\flyway\scripts\definir-github-secrets.ps1
+
+# 5. Entre na pasta do Flyway e execute uma migration
+cd sgdb/oracle/flyway
 flyway -configFiles=conf/projects/controle-financeiro/flyway-controle-financeiro-app-dev.conf migrate
 ```
 
@@ -73,14 +77,18 @@ dados de forma independente:
 │           │       └── 📁 controle-financeiro/          # Projeto Gestao Financeira Pessoal
 │           │           └── 📁 env/                      # Placeholders/credenciais por ambiente adicionado no arquivo gitignore
 │           │               
+│           │               
 │           ├── 📁 docs/                                  # Documentacao especifica
 │           │   ├── 📄 criar_repositorio_no_git.md
+│           │   ├── 📄 criar_pipelines_ci_cd_com_ actions_runner.md
 │           │   ├── 📄 documentacao_arquivos_de_configuracao.md
 │           │   └── 📄 documentacao_das_variaveis_de_configuracao.md
 │           ├── 📁 logs/                                  # Logs gerados pelo Flyway
 │           │   └── 📄 .gitkeep
 │           ├── 📁 scripts/                               # Scripts auxiliares versionados
-│           │   └── 📄 .gitkeep
+│           │   ├── 📄 definir-github-secrets.ps1
+│           │   ├── 📄 definir-github-secrets.sh
+│           │   └── 📄 variaveis-template.env
 │           └── 📁 sql/                                  # Scripts SQL controlados por versao
 │               └── 📁 migrations/                       # Migrations do Flyway
 │                   └── 📁 db/                           # Trilhas de migracao de banco
@@ -211,6 +219,7 @@ dados de forma independente:
 
 - [Documentacao dos Arquivos de Configuracao (.conf)](sgdb/oracle/flyway/docs/documentacao_arquivos_de_configuracao.md)
 - [Documentacao das Variaveis de Configuracao](sgdb/oracle/flyway/docs/documentacao_das_variaveis_de_configuracao.md)
+- [Criar Pipelines CI/CD com Actions Runner](sgdb/oracle/flyway/docs/criar_pipelines_ci_cd_com_%20actions_runner.md)
 - Este documento concentra a lista dos arquivos `.conf` e o papel de cada configuracao no projeto.
 
 ------------------------------------------------------------------------
