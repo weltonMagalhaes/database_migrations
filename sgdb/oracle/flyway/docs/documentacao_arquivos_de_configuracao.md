@@ -19,7 +19,7 @@ Configuracoes principais aplicadas por este arquivo:
 - `flyway.encoding=UTF-8`: padrao de codificacao dos scripts SQL.
 - `flyway.validateMigrationNaming=true`: valida o padrao de nomenclatura dos arquivos de migration.
 - `flyway.sqlMigrationPrefix=V`: define prefixo de versao das migrations.
-- `flyway.sqlMigrationSuffix=.sql`: define extensao esperada dos scripts.
+- `flyway.sqlMigrationSuffixes=.sql`: define extensoes esperadas dos scripts.
 - `flyway.sqlMigrationSeparator=__`: separador entre versao e descricao.
 - `flyway.installedBy=${MIGRATION_INSTALLED_BY}`: registra quem executou a migration.
 - `flyway.cleanDisabled=true`: bloqueia o comando `clean` para reduzir risco de perda acidental de dados.
