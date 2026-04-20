@@ -35,6 +35,7 @@ e de criacao/gestao de usuarios.
 | `APP_DEV_PASSWORD` | DEV | Senha do usuario APPLICATION. |
 | `APP_DEV_DEFAULT_TABLESPACE` | DEV | Default tablespace do usuario APPLICATION. |
 | `APP_DEV_TEMP_TABLESPACE` | DEV | Temporary tablespace do usuario APPLICATION. |
+| `APP_DEV_DATABASE_NAME` | DEV | Nome logico do banco/ambiente para auditoria em migrations de validacao. |
 | `APP_HML_ADMIN_URL` | HML | URL JDBC para executar trilha APPLICATION com usuario admin. |
 | `APP_HML_ADMIN_USER` | HML | Usuario admin para trilha APPLICATION. |
 | `APP_HML_ADMIN_PASSWORD` | HML | Senha do usuario admin da trilha APPLICATION. |
@@ -42,6 +43,7 @@ e de criacao/gestao de usuarios.
 | `APP_HML_PASSWORD` | HML | Senha do usuario APPLICATION. |
 | `APP_HML_DEFAULT_TABLESPACE` | HML | Default tablespace do usuario APPLICATION. |
 | `APP_HML_TEMP_TABLESPACE` | HML | Temporary tablespace do usuario APPLICATION. |
+| `APP_HML_DATABASE_NAME` | HML | Nome logico do banco/ambiente para auditoria em migrations de validacao. |
 | `APP_PROD_ADMIN_URL` | PROD | URL JDBC para executar trilha APPLICATION com usuario admin. |
 | `APP_PROD_ADMIN_USER` | PROD | Usuario admin para trilha APPLICATION. |
 | `APP_PROD_ADMIN_PASSWORD` | PROD | Senha do usuario admin da trilha APPLICATION. |
@@ -49,6 +51,7 @@ e de criacao/gestao de usuarios.
 | `APP_PROD_PASSWORD` | PROD | Senha do usuario APPLICATION. |
 | `APP_PROD_DEFAULT_TABLESPACE` | PROD | Default tablespace do usuario APPLICATION. |
 | `APP_PROD_TEMP_TABLESPACE` | PROD | Temporary tablespace do usuario APPLICATION. |
+| `APP_PROD_DATABASE_NAME` | PROD | Nome logico do banco/ambiente para auditoria em migrations de validacao. |
 
 ### OWNER por ambiente
 
@@ -61,6 +64,7 @@ e de criacao/gestao de usuarios.
 | `OWNER_DEV_PASSWORD` | DEV | Senha do usuario OWNER. |
 | `OWNER_DEV_DEFAULT_TABLESPACE` | DEV | Default tablespace do usuario OWNER. |
 | `OWNER_DEV_TEMP_TABLESPACE` | DEV | Temporary tablespace do usuario OWNER. |
+| `OWNER_DEV_DATABASE_NAME` | DEV | Nome logico do banco/ambiente para auditoria em migrations de validacao. |
 | `OWNER_HML_ADMIN_URL` | HML | URL JDBC para executar trilha OWNER com usuario admin. |
 | `OWNER_HML_ADMIN_USER` | HML | Usuario admin para trilha OWNER. |
 | `OWNER_HML_ADMIN_PASSWORD` | HML | Senha do usuario admin da trilha OWNER. |
@@ -68,6 +72,7 @@ e de criacao/gestao de usuarios.
 | `OWNER_HML_PASSWORD` | HML | Senha do usuario OWNER. |
 | `OWNER_HML_DEFAULT_TABLESPACE` | HML | Default tablespace do usuario OWNER. |
 | `OWNER_HML_TEMP_TABLESPACE` | HML | Temporary tablespace do usuario OWNER. |
+| `OWNER_HML_DATABASE_NAME` | HML | Nome logico do banco/ambiente para auditoria em migrations de validacao. |
 | `OWNER_PROD_ADMIN_URL` | PROD | URL JDBC para executar trilha OWNER com usuario admin. |
 | `OWNER_PROD_ADMIN_USER` | PROD | Usuario admin para trilha OWNER. |
 | `OWNER_PROD_ADMIN_PASSWORD` | PROD | Senha do usuario admin da trilha OWNER. |
@@ -75,6 +80,7 @@ e de criacao/gestao de usuarios.
 | `OWNER_PROD_PASSWORD` | PROD | Senha do usuario OWNER. |
 | `OWNER_PROD_DEFAULT_TABLESPACE` | PROD | Default tablespace do usuario OWNER. |
 | `OWNER_PROD_TEMP_TABLESPACE` | PROD | Temporary tablespace do usuario OWNER. |
+| `OWNER_PROD_DATABASE_NAME` | PROD | Nome logico do banco/ambiente para auditoria em migrations de validacao. |
 
 ## Onde sao consumidas
 
@@ -82,6 +88,8 @@ e de criacao/gestao de usuarios.
   `sgdb/oracle/flyway/conf/flyway-configuracao_base-controle-finaceiro.conf`
 - Arquivos de usuarios:
   `sgdb/oracle/flyway/sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-usuario-*.conf`
+  `sgdb/oracle/flyway/sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-validacao-app-*.conf`
+  `sgdb/oracle/flyway/sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-validacao-owner-*.conf`
 - Arquivo local de variaveis (nao versionado):
   `sgdb/oracle/flyway/conf/projects/controle-financeiro/env/variaveis.env`
 - Template versionado de variaveis:
@@ -214,7 +222,8 @@ $sufixos = @(
   "USER",
   "PASSWORD",
   "DEFAULT_TABLESPACE",
-  "TEMP_TABLESPACE"
+  "TEMP_TABLESPACE",
+  "DATABASE_NAME"
 )
 
 foreach ($env in $environments) {
@@ -331,6 +340,7 @@ suffixes=(
   PASSWORD
   DEFAULT_TABLESPACE
   TEMP_TABLESPACE
+  DATABASE_NAME
 )
 
 for env in "${environments[@]}"; do

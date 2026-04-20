@@ -80,6 +80,42 @@ Configuracoes principais aplicadas por este arquivo:
 - Tipo: configuracao de criacao/gestao de usuario APPLICATION no PROD
 - Funcao principal: executar scripts da trilha `application/app-prod` com placeholders de usuario APPLICATION do PROD.
 
+### 9) `flyway-configuracao-validacao-app-dev.conf`
+
+- Caminho: `sgdb/oracle/flyway/sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-validacao-app-dev.conf`
+- Tipo: configuracao de validacao de migrations no schema APPLICATION DEV
+- Funcao principal: conectar com o usuario de aplicacao DEV e validar execucao da trilha `application/app-dev`.
+
+### 10) `flyway-configuracao-validacao-app-hml.conf`
+
+- Caminho: `sgdb/oracle/flyway/sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-validacao-app-hml.conf`
+- Tipo: configuracao de validacao de migrations no schema APPLICATION HML
+- Funcao principal: conectar com o usuario de aplicacao HML e validar execucao da trilha `application/app-hml`.
+
+### 11) `flyway-configuracao-validacao-app-prod.conf`
+
+- Caminho: `sgdb/oracle/flyway/sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-validacao-app-prod.conf`
+- Tipo: configuracao de validacao de migrations no schema APPLICATION PROD
+- Funcao principal: conectar com o usuario de aplicacao PROD e validar execucao da trilha `application/app-prod`.
+
+### 12) `flyway-configuracao-validacao-owner-dev.conf`
+
+- Caminho: `sgdb/oracle/flyway/sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-validacao-owner-dev.conf`
+- Tipo: configuracao de validacao de migrations no schema OWNER DEV
+- Funcao principal: conectar com o usuario owner DEV e validar execucao da trilha `owner/owner-dev`.
+
+### 13) `flyway-configuracao-validacao-owner-hml.conf`
+
+- Caminho: `sgdb/oracle/flyway/sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-validacao-owner-hml.conf`
+- Tipo: configuracao de validacao de migrations no schema OWNER HML
+- Funcao principal: conectar com o usuario owner HML e validar execucao da trilha `owner/owner-hml`.
+
+### 14) `flyway-configuracao-validacao-owner-prod.conf`
+
+- Caminho: `sgdb/oracle/flyway/sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-validacao-owner-prod.conf`
+- Tipo: configuracao de validacao de migrations no schema OWNER PROD
+- Funcao principal: conectar com o usuario owner PROD e validar execucao da trilha `owner/owner-prod`.
+
 Configuracoes principais comuns aos arquivos `owner-*` e `app-*`:
 
 - Conexao administrativa dedicada por arquivo: `flyway.url`, `flyway.user`, `flyway.password`.
@@ -88,6 +124,36 @@ Configuracoes principais comuns aos arquivos `owner-*` e `app-*`:
 - `flyway.table`: tabela de historico dedicada por contexto/ambiente (`flyway_history_owner_dev`, `flyway_history_owner_hml`, `flyway_history_owner_prod`, `flyway_history_app_dev`, `flyway_history_app_hml`, `flyway_history_app_prod`).
 - `flyway.locations`: aponta para a trilha SQL correta do ambiente/tipo de usuario.
 - `flyway.placeholders.*`: parametriza nome do usuario, senha e tablespaces para os scripts SQL.
+- Nos arquivos `flyway-configuracao-validacao-app-*` e `flyway-configuracao-validacao-owner-*` foi adicionado `flyway.placeholders.ambiente` para registrar o nome logico do ambiente nas migrations de validacao.
+
+## Relacao entre novos `.conf` e `.sql` de validacao
+
+Esta secao mapeia os novos arquivos de configuracao de validacao para os scripts SQL executados em cada ambiente.
+
+### APPLICATION
+
+| Arquivo `.conf` | `flyway.locations` | Script SQL relacionado | Descricao |
+| --- | --- | --- | --- |
+| `flyway-configuracao-validacao-app-dev.conf` | `filesystem:./sql/migrations/db/projects/controle-financeiro/application/app-dev` | `application/app-dev/V1__validacao_flyway_inicial.sql` | Valida a trilha de migration do schema APPLICATION no DEV. |
+| `flyway-configuracao-validacao-app-hml.conf` | `filesystem:./sql/migrations/db/projects/controle-financeiro/application/app-hml` | `application/app-hml/V1__validacao_flyway_inicial.sql` | Valida a trilha de migration do schema APPLICATION no HML. |
+| `flyway-configuracao-validacao-app-prod.conf` | `filesystem:./sql/migrations/db/projects/controle-financeiro/application/app-prod` | `application/app-prod/V1__validacao_flyway_inicial.sql` | Valida a trilha de migration do schema APPLICATION no PROD. |
+
+### OWNER
+
+| Arquivo `.conf` | `flyway.locations` | Script SQL relacionado | Descricao |
+| --- | --- | --- | --- |
+| `flyway-configuracao-validacao-owner-dev.conf` | `filesystem:./sql/migrations/db/projects/controle-financeiro/owner/owner-dev` | `owner/owner-dev/V1__validacao_flyway_inicial.sql` | Valida a trilha de migration do schema OWNER no DEV. |
+| `flyway-configuracao-validacao-owner-hml.conf` | `filesystem:./sql/migrations/db/projects/controle-financeiro/owner/owner-hml` | `owner/owner-hml/V1__validacao_flyway_inicial.sql` | Valida a trilha de migration do schema OWNER no HML. |
+| `flyway-configuracao-validacao-owner-prod.conf` | `filesystem:./sql/migrations/db/projects/controle-financeiro/owner/owner-prod` | `owner/owner-prod/V1__validacao_flyway_inicial.sql` | Valida a trilha de migration do schema OWNER no PROD. |
+
+### Descricao dos novos scripts SQL
+
+- `application/app-dev/V1__validacao_flyway_inicial.sql`: cria `TB_FLYWAY_TESTE` e insere registro de validacao no ambiente DEV.
+- `application/app-hml/V1__validacao_flyway_inicial.sql`: cria `TB_FLYWAY_TESTE` e insere registro de validacao no ambiente HML.
+- `application/app-prod/V1__validacao_flyway_inicial.sql`: cria `TB_FLYWAY_TESTE` e insere registro de validacao no ambiente PROD.
+- `owner/owner-dev/V1__validacao_flyway_inicial.sql`: cria `TB_FLYWAY_TESTE` e insere registro de validacao no ambiente DEV.
+- `owner/owner-hml/V1__validacao_flyway_inicial.sql`: cria `TB_FLYWAY_TESTE` e insere registro de validacao no ambiente HML.
+- `owner/owner-prod/V1__validacao_flyway_inicial.sql`: cria `TB_FLYWAY_TESTE` e insere registro de validacao no ambiente PROD.
 
 ## Observacoes
 
