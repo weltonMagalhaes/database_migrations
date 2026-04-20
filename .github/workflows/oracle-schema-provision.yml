@@ -115,8 +115,9 @@ jobs:
         run: |
           set -euo pipefail
 
-          WORKDIR="${GITHUB_WORKSPACE}/sgdb/oracle/flyway"
-          ENV_FILE="${WORKDIR}/.ci.env"
+          HOST_WORKDIR="${GITHUB_WORKSPACE}/sgdb/oracle/flyway"
+          CONTAINER_WORKDIR="/workspace"
+          ENV_FILE="${HOST_WORKDIR}/.ci.env"
           BASE_CONF="conf/flyway-configuracao_base-controle-finaceiro.conf"
           ENV_LOWER="$(echo "${{ inputs.ambiente }}" | tr '[:upper:]' '[:lower:]')"
           APP_CONF="sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-validacao-app-${ENV_LOWER}.conf"
@@ -128,9 +129,10 @@ jobs:
             echo "Executando ${FLYWAY_CMD} com ${conf_file}"
             docker run --rm \
               --env-file "${ENV_FILE}" \
-              -v "${WORKDIR}:/flyway" \
-              -w /flyway \
-              flyway/flyway:10.15.0 \
+              -v "${HOST_WORKDIR}:${CONTAINER_WORKDIR}" \
+              -w "${CONTAINER_WORKDIR}" \
+              --entrypoint /flyway/flyway \
+              redgate/flyway:10.15.0 \
               -configFiles="${BASE_CONF},${conf_file}" \
               "${FLYWAY_CMD}"
           }
