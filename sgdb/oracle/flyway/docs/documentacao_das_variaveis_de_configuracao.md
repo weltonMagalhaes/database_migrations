@@ -10,6 +10,8 @@ e de criacao/gestao de usuarios.
 - Definir os valores em variaveis do pipeline (ex.: GitHub Secrets/Actions).
 - `ADMIN_*` e `MIGRATION_INSTALLED_BY` sao compartilhadas.
 - `APP_*` e `OWNER_*` mudam por ambiente (`DEV`, `HML`, `PROD`).
+- Usar o template versionado e gerar o arquivo local de variaveis:
+  `cp sgdb/oracle/flyway/scripts/variaveis-template.env sgdb/oracle/flyway/conf/projects/controle-financeiro/env/variaveis.env`
 
 ## Variaveis identificadas no repositorio
 
@@ -80,6 +82,13 @@ e de criacao/gestao de usuarios.
   `sgdb/oracle/flyway/conf/flyway-configuracao_base-controle-finaceiro.conf`
 - Arquivos de usuarios:
   `sgdb/oracle/flyway/sql/migrations/db/projects/controle-financeiro/admin/users/flyway-configuracao-usuario-*.conf`
+- Arquivo local de variaveis (nao versionado):
+  `sgdb/oracle/flyway/conf/projects/controle-financeiro/env/variaveis.env`
+- Template versionado de variaveis:
+  `sgdb/oracle/flyway/scripts/variaveis-template.env`
+- Scripts utilitarios para publicar secrets:
+  `sgdb/oracle/flyway/scripts/definir-github-secrets.ps1`
+  `sgdb/oracle/flyway/scripts/definir-github-secrets.sh`
 - Documentacao relacionada:
   `sgdb/oracle/flyway/docs/documentacao_arquivos_de_configuracao.md`
 
@@ -112,6 +121,12 @@ Comandos iniciais:
 ```powershell
 gh auth login
 gh repo set-default <owner>/<repo>
+```
+
+Script pronto do projeto (leitura automatica de `variaveis.env`):
+
+```powershell
+.\sgdb\oracle\flyway\scripts\definir-github-secrets.ps1
 ```
 
 Criar secrets de repositorio (exemplos):
@@ -202,6 +217,12 @@ gh auth login
 gh repo set-default <owner>/<repo>
 ```
 
+Script pronto do projeto (leitura automatica de `variaveis.env`):
+
+```bash
+./sgdb/oracle/flyway/scripts/definir-github-secrets.sh
+```
+
 Criar secrets de repositorio (exemplos):
 
 ```bash
@@ -285,5 +306,6 @@ done
 
 ## Observacao de versionamento
 
-- Nao versionar scripts locais de carga de secrets com valores reais.
-- Se existir script utilitario como `set-github-secrets.ps1`, manter fora de commit.
+- Nao versionar `variaveis.env` com valores reais.
+- O template `sgdb/oracle/flyway/scripts/variaveis-template.env` pode e deve ser versionado.
+- Os scripts `definir-github-secrets` em `sgdb/oracle/flyway/scripts/` podem ser versionados, pois leem valores do `variaveis.env` local.
