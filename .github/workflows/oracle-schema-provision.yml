@@ -1,4 +1,4 @@
-name: Oracle Schema Provision
+﻿name: Oracle Schema Provision
 
 on:
   workflow_dispatch:
@@ -110,6 +110,17 @@ jobs:
           OWNER_PROD_DEFAULT_TABLESPACE=${{ secrets.OWNER_PROD_DEFAULT_TABLESPACE }}
           OWNER_PROD_TEMP_TABLESPACE=${{ secrets.OWNER_PROD_TEMP_TABLESPACE }}
           OWNER_PROD_DATABASE_NAME=${{ secrets.OWNER_PROD_DATABASE_NAME }}
+
+          SQL_GUARD_LLM_ENABLED=${{ vars.SQL_GUARD_LLM_ENABLED || 'false' }}
+          SQL_GUARD_ALLOW_OVERRIDE=${{ vars.SQL_GUARD_ALLOW_OVERRIDE || 'false' }}
+          LLM_PROVIDER=${{ vars.LLM_PROVIDER || 'openai' }}
+          LLM_API_KEY=${{ secrets.LLM_API_KEY }}
+          LLM_MODEL=${{ vars.LLM_MODEL || '' }}
+          LLM_BASE_URL=${{ vars.LLM_BASE_URL || '' }}
+          OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL=${{ vars.OPENAI_MODEL || 'gpt-5.4-mini' }}
+          OPENAI_BASE_URL=${{ vars.OPENAI_BASE_URL || 'https://api.openai.com' }}
+          GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
           "@ | Set-Content -Path $envFile -Encoding UTF8
 
       - name: Executar Flyway por dominio/ambiente
@@ -207,20 +218,44 @@ jobs:
             Invoke-LocalFlyway -confFile $confFile
           }
 
+          function Invoke-SqlGuard([string]$validationConfFile, [string]$domainName) {
+            Write-Host "Executando SQL guard LLM para dominio '$domainName' com $validationConfFile"
+            Import-EnvFile -filePath $envFile
+
+            Push-Location $hostWorkdir
+            try {
+              & pwsh -NoProfile -File "scripts/validar-padrao-sql-llm.ps1" `
+                -FlywayConfigFile $validationConfFile `
+                -Domain $domainName `
+                -Ambiente "${{ inputs.ambiente }}"
+
+              if ($LASTEXITCODE -ne 0) {
+                throw "SQL guard retornou codigo $LASTEXITCODE para $validationConfFile."
+              }
+            }
+            finally {
+              Pop-Location
+            }
+          }
+
           switch ("${{ inputs.dominio }}") {
             "application" {
+              Invoke-SqlGuard $appConf "application"
               if ($flywayCmd -eq "migrate") {
                 Run-Flyway $appUserConf
               }
               Run-Flyway $appConf
             }
             "owner" {
+              Invoke-SqlGuard $ownerConf "owner"
               if ($flywayCmd -eq "migrate") {
                 Run-Flyway $ownerUserConf
               }
               Run-Flyway $ownerConf
             }
             "all" {
+              Invoke-SqlGuard $appConf "application"
+              Invoke-SqlGuard $ownerConf "owner"
               if ($flywayCmd -eq "migrate") {
                 Run-Flyway $appUserConf
                 Run-Flyway $ownerUserConf
@@ -239,3 +274,5 @@ jobs:
           if (Test-Path $envFile) {
             Remove-Item -LiteralPath $envFile -Force
           }
+
+

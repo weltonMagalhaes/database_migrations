@@ -1,0 +1,26 @@
+﻿{
+  "version": "1.0.0",
+  "rules": [
+    {
+      "id": "table_name_tb_prefix",
+      "description": "Table names must start with TB_ and use UPPER_SNAKE_CASE.",
+      "severity": "error",
+      "target": "table_name",
+      "regex": "^TB_[A-Z0-9_]+$"
+    },
+    {
+      "id": "sequence_name_sq_prefix",
+      "description": "Sequence names must start with SQ_ and use UPPER_SNAKE_CASE.",
+      "severity": "error",
+      "target": "sequence_name",
+      "regex": "^SQ_[A-Z0-9_]+$"
+    },
+    {
+      "id": "column_name_upper_snake",
+      "description": "Column names must use UPPER_SNAKE_CASE.",
+      "severity": "error",
+      "target": "column_name",
+      "regex": "^[A-Z][A-Z0-9_]*$"
+    }
+  ]
+}
